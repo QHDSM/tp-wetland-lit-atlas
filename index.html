@@ -351,44 +351,50 @@ table.t tr:hover td{background:#fafbfc}
 <!-- ================= 我的项目 ================= -->
 <div id="v-mine" style="display:none"><div class="view">
   <div class="vhead">
-    <h1>我的项目</h1>
-    <p>把项目主创新拆成可核对的条目，并逐条列出从哪些文献借用、支撑论文的哪个环节。
-      下方「借用关系」是从卡片里提取的实际连线，不是示意。<b>注意：当前借用连线是按主题词自动匹配的候选集，
-      偏宽——例如「结构分支 S」下混入了土壤水力异质性等主题不相关的条目，需人工收窄后再定稿。</b></p>
+    <h1>我的项目 <span class="pill hot" style="font-size:12px">正本：目标SCI\论文\000.docx</span></h1>
+    <p id="mine-sub"></p>
   </div>
   <div class="mine">
     <div>
       <div class="core">
-        <h3>主创新</h3>
-        <p id="mine-core"></p>
+        <h3>项目档案</h3>
+        <div id="mine-profile" class="kv"></div>
       </div>
       <div class="pnl" style="margin-top:16px">
-        <h3>可核对条目</h3>
-        <div class="cap">每条都对应一个能力判据；左侧红点表示该条目是否已在项目中落地</div>
-        <div id="mine-claims"></div>
+        <h3>技术路线（论文实际五环）</h3>
+        <div class="cap">每一环都带论文里的方法名与关键结果</div>
+        <div id="mine-pipeline"></div>
       </div>
       <div class="pnl">
-        <h3>县域落地版</h3>
-        <div class="cap">苍穹杯 / 若尔盖县口径，与全高原版并行</div>
-        <p class="kv" id="mine-secondary"></p>
+        <h3>主要结论（论文原文）</h3>
+        <div id="mine-findings"></div>
+      </div>
+      <div class="pnl">
+        <h3>下一步（论文自陈方向）</h3>
+        <div id="mine-next"></div>
       </div>
     </div>
     <div>
       <div class="pnl">
-        <h3>借用关系（按分支）</h3>
-        <div class="cap">数字＝该分支挂到的文献数。只有两三篇的分支，就是这个项目最薄的地方。</div>
-        <div id="mine-branches"></div>
+        <h3>论文自陈不足 ↔ 全领域能力空缺</h3>
+        <div class="cap">左侧是论文自己承认的不足，右侧是全领域有多少论文真正做到了该项能力。占比越低＝越空缺＝越是可做之处。</div>
+        <div id="mine-gapmap"></div>
       </div>
       <div class="pnl">
-        <h3>试水精读批次 · 27 篇</h3>
-        <div class="cap">正在精读的文献，优先补在全领域最空缺的能力上</div>
-        <div id="pilot-list"></div>
+        <h3>全部不足（论文自陈）</h3>
+        <div id="mine-limits"></div>
+      </div>
+      <div class="pnl" style="border-color:#f7cfcb;background:#fffaf9">
+        <h3 style="color:var(--hot)">口径提醒</h3>
+        <div class="cap" style="margin-bottom:0" id="mine-note"></div>
       </div>
     </div>
   </div>
 </div></div>
 
 <script src="data.js"></script>
+<script src="my_project.js"></script>
+<script src="summaries.js"></script>
 <script>
 "use strict";
 const D = window.SITE_DATA;
@@ -587,7 +593,38 @@ function renderDetail(){
     </div>`;
   }
   h += `</div>`;
+  h += summaryBlock(p.i);
   box.innerHTML = h;
+}
+
+/* ---------------- 详情：精读总结（分辨率/时段/精度） ---------------- */
+function summaryBlock(pid){
+  const S = window.SUMMARIES;
+  if(!S || !S[pid]) return "";
+  const s = S[pid];
+  const NOT = "材料未提供";
+  const srcLabel = {deep_read:"真读正文产出", card:"由已有卡片派生", card_orphan:"由已有卡片派生",
+                    index_only:"仅题录", mine:"项目正本"}[s.source] || s.source;
+  const pill = v => v && v !== NOT
+      ? `<span style="color:var(--txt)">${esc(v)}</span>`
+      : `<span style="color:var(--txt3)">材料未提供</span>`;
+  let h = `<div class="blk"><h4>精度与口径 <span class="pill" style="font-weight:400">来源：${esc(srcLabel)}</span></h4>
+    <div class="facts" style="margin-bottom:0">
+      <dt>空间分辨率</dt><dd>${pill(s.resolution)}</dd>
+      <dt>时间范围</dt><dd>${pill(s.period)}</dd>
+      <dt>精度指标</dt><dd>${pill(s.accuracy)}</dd>
+    </div>
+    ${s.material_note?`<div class="note" style="margin-top:8px">${esc(s.material_note)}</div>`:""}
+  </div>`;
+  if(s.findings && s.findings.length)
+    h += `<div class="blk f"><h4>量化发现（精读总结）</h4><ul class="bul">${s.findings.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  if(s.route_steps && s.route_steps.length)
+    h += `<div class="blk"><h4>技术链（精读总结，${s.route_steps.length} 步）</h4><ol class="chain">${s.route_steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`;
+  if(s.limits && s.limits.length)
+    h += `<div class="blk w"><h4>局限（精读总结）</h4><ul class="bul">${s.limits.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  if(s.quote && s.quote !== NOT)
+    h += `<div class="blk"><h4>原文引句（精读总结）</h4><div class="q">${esc(s.quote)}</div></div>`;
+  return h;
 }
 
 /* ---------------- 视图一：技术路线 ---------------- */
@@ -680,36 +717,40 @@ function renderGaps(){
 
 /* ---------------- 视图三：我的项目 ---------------- */
 function renderMine(){
-  const u = D.stats.user;
-  $("#mine-core").textContent = u.core;
-  const critName = {}; D.meta.criteria.forEach(c => critName[c.key]=c.name);
-  const critRate = {}; D.stats.crit.forEach(c => critRate[c.key]=c.strong);
-  $("#mine-claims").innerHTML = (u.claim||[]).map(([txt,k]) => `
-    <div class="claim"><span class="dot"></span><div>${esc(txt)}
-      <div style="margin-top:4px"><span class="pill hot">补空缺：${esc(critName[k]||k)}（领域强项仅 ${((critRate[k]||0)*100).toFixed(1)}%）</span></div>
+  const P = window.MY_PROJECT;
+  if(!P){ $("#mine-sub").textContent = "my_project.js 未加载"; return; }
+  $("#mine-sub").innerHTML = `${esc(P.title)}<br><span style="color:var(--txt3)">${esc(P.title_en)}</span><br>
+    <span style="color:var(--txt3);font-size:12.5px">正本：${esc(P.source)}</span>`;
+
+  $("#mine-profile").innerHTML = `
+    <dt>技术路线</dt><dd><span class="pill" style="background:#c1663a;color:#fff">${P.route} 情景模拟与生态风险预测</span></dd>
+    <dt>研究区</dt><dd>${esc(P.area)}</dd>
+    <dt>时段</dt><dd>${esc(P.span)}</dd>
+    <dt>尺度</dt><dd>${esc(P.res)}</dd>
+    <dt>精度</dt><dd><b>${esc(P.acc)}</b></dd>
+    <dt>数据</dt><dd style="font-size:12.5px">${esc(P.data)}</dd>`;
+
+  $("#mine-pipeline").innerHTML = P.pipeline.map(([name,method,res],i) => `
+    <div class="claim"><span class="dot"></span><div>
+      <b>${i+1}. ${esc(name)}</b>
+      <div style="color:var(--txt2);font-size:12.5px;margin-top:2px">方法：${esc(method)}</div>
+      <div style="font-size:12.5px;margin-top:2px">结果：${esc(res)}</div>
     </div></div>`).join("");
-  $("#mine-secondary").textContent = u.secondary||"";
 
-  const byBranch = {};
-  (D.stats.user_links||[]).forEach(l => { (byBranch[l.branch]=byBranch[l.branch]||[]).push(l); });
-  const order = Object.entries(byBranch).sort((a,b)=>b[1].length-a[1].length);
-  $("#mine-branches").innerHTML = order.map(([b,items]) => `
-    <div class="branch"><div class="bt">${esc(b)}<span class="n">${items.length} 篇</span></div>
-      <div class="items">${items.map(it => {
-        const p = titleToPaper[it.title];
-        return `<div class="it" ${p?`data-i="${p.i}"`:""}>${esc(it.title).slice(0,64)} <span style="color:var(--txt3)">· ${it.route||""} · ${it.year||""}</span></div>`;
-      }).join("")}</div></div>`).join("");
+  $("#mine-findings").innerHTML = `<ul class="bul">${P.findings.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`;
 
-  $("#pilot-list").innerHTML = `<table class="t"><thead><tr>
-    <th>#</th><th>题名</th><th>路线</th><th>补的空缺</th></tr></thead><tbody>
-    ${D.pilot.map(p => {
-      const pp = (p.pid && pidToPaper[p.pid]) || (p.dupof && pidToPaper[p.dupof]) || D.papers.find(x => x.pilot===p.n);
-      const note = p.dupof ? `<span class="pill" title="与已精读篇同题，属抽取重复副本">同题副本</span>` : "";
-      return `<tr ${pp?`data-i="${pp.i}" style="cursor:pointer"`:""}>
-        <td>${p.n}</td><td>${esc(p.title).slice(0,58)} ${note}</td>
-        <td><span class="pill">${p.route}</span></td>
-        <td style="color:var(--txt2)">${esc(p.crit)}</td></tr>`;
-    }).join("")}</tbody></table>`;
+  $("#mine-next").innerHTML = `<ul class="bul" style="color:var(--txt2)">${P.next.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`;
+
+  $("#mine-gapmap").innerHTML = P.gapMap.map(([gap,key,name,rate]) => `
+    <div class="claim"><span class="dot" style="background:${rate<20?'var(--hot)':'var(--warn)'}"></span><div>
+      <div>${esc(gap)}</div>
+      <div style="margin-top:4px">
+        <span class="pill ${rate<20?'hot':''}">${esc(name)}：领域强项仅 ${rate}%</span>
+      </div>
+    </div></div>`).join("");
+
+  $("#mine-limits").innerHTML = `<ul class="bul">${P.limits.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`;
+  $("#mine-note").textContent = window.CARD_SPEC_NOTE || "";
 }
 
 /* ---------------- 事件 ---------------- */
