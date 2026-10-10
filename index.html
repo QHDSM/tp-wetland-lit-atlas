@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>青藏高原高寒湿地 · 技术路线文献图谱</title>
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#fff; --line:#e3e6ea; --line2:#eef1f4;
+  --txt:#1d2430; --txt2:#5a6675; --txt3:#8b96a5;
+  --s1:#2f6fb5; --s2:#c1663a; --s3:#3f8f6b; --s4:#8a6bbf;
+  --hot:#e0453a; --hotbg:#fdeceb;
+  --ok:#2e8b57; --warn:#d18b00; --gray:#9aa4b2;
+  --shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
+  --shadow2:0 8px 24px rgba(16,24,40,.10);
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--txt); background:var(--bg); -webkit-font-smoothing:antialiased;
+}
+a{color:var(--s1);text-decoration:none}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--txt);
+  border-radius:8px;padding:6px 11px;transition:.14s}
+button:hover{border-color:#c7ced8;background:#fafbfc}
+button.on{background:var(--txt);color:#fff;border-color:var(--txt)}
+input,select{font:inherit;color:var(--txt);border:1px solid var(--line);border-radius:8px;
+  padding:7px 10px;background:#fff;outline:none;width:100%}
+input:focus,select:focus{border-color:var(--s1);box-shadow:0 0 0 3px rgba(47,111,181,.10)}
+
+/* ---------- 顶栏 ---------- */
+header{
+  position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+}
+.hrow{display:flex;align-items:center;gap:18px;padding:11px 20px;max-width:1780px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:11px;flex:0 0 auto}
+.brand .mk{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2f6fb5,#3f8f6b);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px}
+.brand b{font-size:15px;letter-spacing:.2px;display:block;line-height:1.25}
+.brand small{color:var(--txt3);font-size:11.5px}
+nav{display:flex;gap:4px;flex:1 1 auto}
+nav button{border:0;background:transparent;color:var(--txt2);padding:7px 13px;border-radius:8px;font-weight:500}
+nav button:hover{background:#f0f2f5;color:var(--txt)}
+nav button.on{background:var(--txt);color:#fff}
+nav a{text-decoration:none;display:inline-block;color:var(--txt2);padding:7px 13px;border-radius:8px;font-weight:500}
+nav a:hover{background:#f0f2f5;color:var(--txt)}
+.hstat{display:flex;gap:16px;color:var(--txt3);font-size:12.5px;flex:0 0 auto}
+.hstat b{color:var(--txt);font-variant-numeric:tabular-nums}
+
+/* ---------- 检索页 ---------- */
+.wrap{display:grid;grid-template-columns:262px minmax(0,1fr) 430px;gap:0;
+  max-width:1780px;margin:0 auto;height:calc(100vh - 53px)}
+aside{overflow-y:auto;padding:16px 14px 40px;border-right:1px solid var(--line);background:#fbfcfd}
+main{overflow-y:auto;padding:0}
+section.detail{overflow-y:auto;border-left:1px solid var(--line);background:#fff}
+.fgroup{margin-bottom:16px}
+.fgroup>label{display:block;font-size:11.5px;font-weight:600;color:var(--txt3);
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:12.5px;padding:3.5px 9px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;color:var(--txt2);cursor:pointer;transition:.12s;user-select:none}
+.chip:hover{border-color:#c2cad4;color:var(--txt)}
+.chip.on{background:var(--s1);border-color:var(--s1);color:#fff}
+.chip.on.hot{background:var(--hot);border-color:var(--hot)}
+.chip .c{opacity:.62;font-size:11px;margin-left:3px;font-variant-numeric:tabular-nums}
+
+.searchbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.95);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:11px 16px}
+.sb-row{display:flex;gap:9px;align-items:center}
+.sb-row input{flex:1}
+.meta-row{display:flex;align-items:center;gap:12px;margin-top:8px;color:var(--txt3);font-size:12.5px;flex-wrap:wrap}
+.meta-row b{color:var(--txt)}
+.hits{color:var(--hot);font-weight:600}
+.clearbtn{border:0;background:transparent;color:var(--s1);padding:2px 4px;font-size:12.5px}
+
+.list{padding:9px 12px 60px}
+.row{padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);background:#fff;
+  margin-bottom:8px;cursor:pointer;transition:.12s;box-shadow:var(--shadow)}
+.row:hover{border-color:#c4ccd6;box-shadow:var(--shadow2);transform:translateY(-1px)}
+.row.sel{border-color:var(--s1);box-shadow:0 0 0 3px rgba(47,111,181,.12)}
+.row h3{margin:0 0 5px;font-size:14.5px;font-weight:600;line-height:1.45}
+.row .sub{color:var(--txt3);font-size:12.5px;margin-bottom:7px}
+.row .tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tag{font-size:11.5px;padding:2px 7px;border-radius:6px;background:#f1f3f6;color:var(--txt2)}
+.tag.rt{color:#fff}
+.tag.pilot{background:var(--hotbg);color:var(--hot);font-weight:600}
+.tag.card{background:#eaf3ec;color:var(--ok)}
+.tag.none{background:#f1f3f6;color:var(--gray)}
+.tag.hl{background:#eef4fb;color:var(--s1)}
+mark{background:#fff3b8;color:inherit;padding:0 1px;border-radius:3px}
+
+/* ---------- 详情 ---------- */
+.dt{padding:16px 18px 60px}
+.dt h2{font-size:17px;line-height:1.5;margin:0 0 8px}
+.dt .en{color:var(--txt3);font-size:12.5px;line-height:1.5;margin-bottom:10px}
+.dt .facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12.5px;
+  padding:10px 12px;background:#fafbfc;border:1px solid var(--line2);border-radius:8px;margin-bottom:14px}
+.dt .facts dt{color:var(--txt3);white-space:nowrap}
+.dt .facts dd{margin:0;color:var(--txt)}
+.blk{margin-bottom:16px}
+.blk>h4{margin:0 0 7px;font-size:12.5px;font-weight:700;color:var(--txt2);
+  letter-spacing:.03em;display:flex;align-items:center;gap:7px}
+.blk>h4::before{content:"";width:3px;height:13px;border-radius:2px;background:var(--s1)}
+.blk.w>h4::before{background:var(--s2)} .blk.g>h4::before{background:var(--s4)}
+.blk.i>h4::before{background:var(--s3)} .blk.f>h4::before{background:var(--warn)}
+.blk.pr>h4::before{background:var(--hot)}
+.chain{counter-reset:n;padding:0;margin:0;list-style:none}
+.chain li{counter-increment:n;position:relative;padding:8px 10px 8px 34px;margin-bottom:6px;
+  background:#fafbfc;border:1px solid var(--line2);border-radius:8px;font-size:13px;line-height:1.65}
+.chain li::before{content:counter(n);position:absolute;left:9px;top:8px;width:18px;height:18px;
+  border-radius:50%;background:var(--s1);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:600}
+ul.bul{margin:0;padding-left:19px}
+ul.bul li{margin-bottom:6px;font-size:13px;line-height:1.68}
+ul.bul li::marker{color:var(--txt3)}
+.q{border-left:3px solid var(--line);padding:7px 12px;color:var(--txt2);font-size:12.5px;
+  font-style:italic;margin-bottom:6px;background:#fafbfc;border-radius:0 8px 8px 0}
+.kv{font-size:13px;line-height:1.68}
+.note{margin-top:14px;padding:12px;border-radius:8px;background:#fafbfc;border:1px dashed var(--line);
+  color:var(--txt2);font-size:12.5px;line-height:1.7}
+.empty{padding:60px 24px;text-align:center;color:var(--txt3)}
+.empty .big{font-size:34px;margin-bottom:10px;opacity:.5}
+
+/* ---------- 通用视图 ---------- */
+.view{max-width:1300px;margin:0 auto;padding:22px 20px 70px}
+.vhead{margin-bottom:20px}
+.vhead h1{font-size:20px;margin:0 0 6px}
+.vhead p{margin:0;color:var(--txt2);font-size:13.5px;max-width:900px;line-height:1.75}
+.pnl{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px;
+  margin-bottom:16px;box-shadow:var(--shadow)}
+.pnl h3{margin:0 0 4px;font-size:15px}
+.pnl .cap{color:var(--txt3);font-size:12.5px;margin-bottom:14px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--txt2);margin-top:10px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* 路线条 */
+.route-row{display:grid;grid-template-columns:210px 1fr 92px;gap:14px;align-items:center;
+  padding:9px 0;border-bottom:1px solid var(--line2)}
+.route-row:last-child{border-bottom:0}
+.route-row .nm{font-size:13px;font-weight:500}
+.route-row .nm small{display:block;color:var(--txt3);font-weight:400;font-size:11.5px}
+.bar{height:22px;background:#f1f3f6;border-radius:6px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.route-row .num{text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--txt2)}
+.route-row .num b{font-size:15px;color:var(--txt)}
+.stage-h{display:flex;align-items:center;gap:9px;margin:18px 0 6px;font-size:13px;font-weight:600}
+.stage-h em{flex:1;height:1px;background:var(--line);font-style:normal}
+
+/* 热力矩阵 */
+.mx{overflow-x:auto}
+table.mx-t{border-collapse:separate;border-spacing:3px;font-size:12px}
+table.mx-t th{font-weight:600;color:var(--txt2);font-size:11.5px;padding:2px 4px;white-space:nowrap}
+table.mx-t th.rot{writing-mode:vertical-rl;height:122px;text-align:left;
+  vertical-align:bottom;padding:0 3px;letter-spacing:.02em}
+table.mx-t td.c{width:56px;height:26px;border-radius:5px;text-align:center;color:#fff;
+  font-size:11px;font-variant-numeric:tabular-nums;cursor:default}
+table.mx-t td.lb{white-space:nowrap;font-weight:500;padding-right:8px;text-align:right}
+table.mx-t td.lb small{color:var(--txt3);font-weight:400}
+table.mx-t tr:hover td.lb{color:var(--s1)}
+
+/* 缺口 */
+.gap-row{display:grid;grid-template-columns:190px 1fr 120px;gap:12px;align-items:center;padding:7px 0}
+.gap-row .t{font-size:13px}
+.gap-row .bar2{height:18px;background:#f1f3f6;border-radius:5px;overflow:hidden}
+.gap-row .bar2 i{display:block;height:100%;background:var(--hot);opacity:.85}
+.gap-row .v{text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--txt2)}
+.gap-row .v b{font-size:14px;color:var(--hot)}
+
+/* 我的项目 */
+.mine{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:1080px){.mine{grid-template-columns:1fr}}
+.mine .core{background:linear-gradient(135deg,#fdeceb,#fff);border:1px solid #f7cfcb;border-radius:var(--r);padding:16px}
+.mine .core h3{margin:0 0 8px;font-size:14px;color:var(--hot)}
+.mine .core p{margin:0;font-size:13.5px;line-height:1.75}
+.claim{display:flex;gap:9px;padding:8px 0;border-bottom:1px dashed var(--line2);font-size:13px}
+.claim:last-child{border-bottom:0}
+.claim .dot{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:var(--hot);margin-top:7px}
+.branch{margin-bottom:12px}
+.branch .bt{font-size:13px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.branch .bt .n{background:#f1f3f6;color:var(--txt2);font-size:11px;padding:1px 7px;border-radius:999px;font-weight:500}
+.branch .items{display:flex;flex-direction:column;gap:3px}
+.branch .it{font-size:12.5px;color:var(--txt2);padding:4px 8px;background:#fafbfc;
+  border-radius:6px;cursor:pointer;border:1px solid transparent}
+.branch .it:hover{border-color:var(--line);color:var(--s1)}
+
+.pill{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:999px;background:#f1f3f6;color:var(--txt2)}
+.pill.hot{background:var(--hotbg);color:var(--hot);font-weight:600}
+.pill.ok{background:#eaf3ec;color:var(--ok)}
+tbody tr:hover{background:#fafbfc}
+
+table.t{border-collapse:collapse;width:100%;font-size:12.5px}
+table.t th{text-align:left;font-weight:600;color:var(--txt2);padding:7px 9px;
+  border-bottom:2px solid var(--line);font-size:11.5px;white-space:nowrap}
+table.t td{padding:7px 9px;border-bottom:1px solid var(--line2);vertical-align:top}
+table.t tr:hover td{background:#fafbfc}
+
+@media(max-width:1280px){
+  .wrap{grid-template-columns:236px minmax(0,1fr)}
+  section.detail{display:none}
+  .wrap.show-detail section.detail{display:block;position:fixed;inset:53px 0 0 auto;width:min(520px,92vw);
+    z-index:35;box-shadow:var(--shadow2)}
+  .wrap.show-detail main,.wrap.show-detail aside{filter:blur(1px)}
+}
+@media(max-width:820px){
+  .wrap{grid-template-columns:1fr;height:auto}
+  aside{display:none} .wrap.show-filter aside{display:block;position:fixed;inset:53px auto 0 0;
+    width:min(300px,88vw);z-index:35;background:#fff;box-shadow:var(--shadow2)}
+  .hrow{flex-wrap:wrap;gap:10px} .hstat{display:none}
+  nav button{padding:7px 10px;font-size:13px}
+}
+.mobonly{display:none}
+@media(max-width:820px){.mobonly{display:inline-block}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <div class="brand">
+      <div class="mk">青</div>
+      <div><b>青藏高原高寒湿地 · 文献技术路线图谱</b><small id="brandsub">加载中…</small></div>
+    </div>
+    <nav>
+      <button data-v="search" class="on">检索</button>
+      <button data-v="routes">技术路线</button>
+      <button data-v="gaps">能力缺口</button>
+      <button data-v="mine">我的项目</button>
+      <a href="three-d.html">三维网络 <span style="font-size:10px;background:var(--hot);color:#fff;padding:1px 5px;border-radius:99px;vertical-align:1px">新</span></a>
+    </nav>
+    <div class="hstat">
+      <span>文献 <b id="hs-total">–</b></span>
+      <span>已精读 <b id="hs-card">–</b></span>
+      <span>试水批次 <b id="hs-pilot">–</b></span>
+    </div>
+    <button class="mobonly" id="btn-filter">筛选</button>
+  </div>
+</header>
+
+<!-- ================= 检索 ================= -->
+<div class="wrap" id="v-search">
+  <aside>
+    <div class="fgroup"><label>搜索范围</label>
+      <div class="chips" id="f-scope">
+        <span class="chip on" data-s="">全文</span>
+        <span class="chip" data-s="t">标题</span>
+        <span class="chip" data-s="a">研究区</span>
+        <span class="chip" data-s="j">期刊</span>
+      </div>
+    </div>
+    <div class="fgroup"><label>研究阶段</label><div class="chips" id="f-stage"></div></div>
+    <div class="fgroup"><label>技术路线</label><div class="chips" id="f-route"></div></div>
+    <div class="fgroup"><label>具体方法</label><div class="chips" id="f-method"></div></div>
+    <div class="fgroup"><label>精读状态</label>
+      <div class="chips" id="f-doc">
+        <span class="chip on" data-d="">全部</span>
+        <span class="chip" data-d="card">已精读卡片</span>
+        <span class="chip" data-d="pilot">试水批次</span>
+        <span class="chip" data-d="none">仅索引</span>
+      </div>
+    </div>
+    <div class="fgroup"><label>证据强度</label><div class="chips" id="f-ev"></div></div>
+    <div class="fgroup"><label>创新等级</label><div class="chips" id="f-lv"></div></div>
+    <div class="fgroup"><label>文献类型</label><div class="chips" id="f-ty"></div></div>
+    <div class="fgroup"><label>年份</label>
+      <div style="display:flex;gap:8px">
+        <input id="f-y1" placeholder="起" inputmode="numeric">
+        <input id="f-y2" placeholder="止" inputmode="numeric">
+      </div>
+    </div>
+    <button id="btn-reset" style="width:100%;margin-top:4px">清空全部条件</button>
+  </aside>
+
+  <main>
+    <div class="searchbar">
+      <div class="sb-row">
+        <input id="q" placeholder="搜索题名、研究区、方法、期刊…（支持空格分词）">
+        <button id="btn-sort" title="切换排序">按年份 ↓</button>
+      </div>
+      <div class="meta-row">
+        <span>命中 <b class="hits" id="n-hit">0</b> / <span id="n-all">0</span> 篇</span>
+        <span id="active-filters"></span>
+        <button class="clearbtn" id="btn-clear">清空搜索词</button>
+      </div>
+    </div>
+    <div class="list" id="list"></div>
+  </main>
+
+  <section class="detail" id="detail"></section>
+</div>
+
+<!-- ================= 技术路线 ================= -->
+<div id="v-routes" style="display:none"><div class="view">
+  <div class="vhead">
+    <h1>技术路线分布</h1>
+    <p>647 篇进入三级索引的文献，按 4 个研究阶段、10 条技术路线归位。<b>这张图要看的不是「有多少篇」，而是体量与关键性的错位</b>：
+      水文生物地球化学与生态功能实验（R8）文献最多（249 篇），却<b>没有一篇进入核心主线</b>；情景模拟与生态风险预测（R6）只有 30 篇，
+      却是核心主线最密的一条（9 篇）。点任一条路线可跳到检索页并筛出该路线全部文献。</p>
+  </div>
+  <div class="pnl">
+    <h3>文献体量 × 技术路线</h3>
+    <div class="cap">条形长度＝该路线文献数；深色段＝其中已精读并产出卡片的部分；括注为核心主线篇数</div>
+    <div id="route-bars"></div>
+    <div class="legend">
+      <span><i style="background:#2f6fb5"></i>数据与监测</span>
+      <span><i style="background:#c1663a"></i>机制与阈值</span>
+      <span><i style="background:#3f8f6b"></i>预测与验证</span>
+      <span><i style="background:#8a6bbf"></i>管理与应用</span>
+    </div>
+  </div>
+  <div class="pnl">
+    <h3>具体方法 × 文献数</h3>
+    <div class="cap">43 个三级方法分类中文献最多的 20 个（含未精读）</div>
+    <div id="method-table"></div>
+  </div>
+</div></div>
+
+<!-- ================= 能力缺口 ================= -->
+<div id="v-gaps" style="display:none"><div class="view">
+  <div class="vhead">
+    <h1>能力缺口矩阵</h1>
+    <p>把 318 张卡片的「主要缺陷 / 技术空洞」按 16 项能力判据归一，逐篇判定「是否真的做到了」。
+      判定不是关键词命中，而是<b>可审计的判据</b>——每格都能点开看原文依据。
+      强项占比越低，说明这个能力在领域内越空缺，也越可能是研究机会。</p>
+  </div>
+  <div class="pnl">
+    <h3>全领域最空缺的 8 项能力</h3>
+    <div class="cap">红色条＝有强项做法的论文占全部已精读论文的比例</div>
+    <div id="gap-bars"></div>
+  </div>
+  <div class="pnl">
+    <h3>技术路线 × 能力 剖面</h3>
+    <div class="cap">格子数值＝该路线中「做到该能力」的论文比例。颜色越深越强，越浅越空缺；空白格＝该路线完全没有这项能力。</div>
+    <div class="mx" id="cap-matrix"></div>
+    <div class="legend">
+      <span><i style="background:#eef1f4"></i>0%</span>
+      <span><i style="background:#d6e4f0"></i>25%</span>
+      <span><i style="background:#8fb8d8"></i>50%</span>
+      <span><i style="background:#4a86bd"></i>75%</span>
+      <span><i style="background:#2f6fb5"></i>100%</span>
+    </div>
+  </div>
+  <div class="pnl">
+    <h3>路线间的互补承接</h3>
+    <div class="cap">A 路线的强项恰好是 B 路线的弱项 → 两者之间应当互相借鉴</div>
+    <div id="comp-table"></div>
+  </div>
+</div></div>
+
+<!-- ================= 我的项目 ================= -->
+<div id="v-mine" style="display:none"><div class="view">
+  <div class="vhead">
+    <h1>我的项目</h1>
+    <p>把项目主创新拆成可核对的条目，并逐条列出从哪些文献借用、支撑论文的哪个环节。
+      下方「借用关系」是从卡片里提取的实际连线，不是示意。<b>注意：当前借用连线是按主题词自动匹配的候选集，
+      偏宽——例如「结构分支 S」下混入了土壤水力异质性等主题不相关的条目，需人工收窄后再定稿。</b></p>
+  </div>
+  <div class="mine">
+    <div>
+      <div class="core">
+        <h3>主创新</h3>
+        <p id="mine-core"></p>
+      </div>
+      <div class="pnl" style="margin-top:16px">
+        <h3>可核对条目</h3>
+        <div class="cap">每条都对应一个能力判据；左侧红点表示该条目是否已在项目中落地</div>
+        <div id="mine-claims"></div>
+      </div>
+      <div class="pnl">
+        <h3>县域落地版</h3>
+        <div class="cap">苍穹杯 / 若尔盖县口径，与全高原版并行</div>
+        <p class="kv" id="mine-secondary"></p>
+      </div>
+    </div>
+    <div>
+      <div class="pnl">
+        <h3>借用关系（按分支）</h3>
+        <div class="cap">数字＝该分支挂到的文献数。只有两三篇的分支，就是这个项目最薄的地方。</div>
+        <div id="mine-branches"></div>
+      </div>
+      <div class="pnl">
+        <h3>试水精读批次 · 27 篇</h3>
+        <div class="cap">正在精读的文献，优先补在全领域最空缺的能力上</div>
+        <div id="pilot-list"></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+const D = window.SITE_DATA;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------------- 状态 ---------------- */
+const F = { q:"", scope:"", stage:new Set(), route:new Set(), method:new Set(),
+            doc:"", ev:new Set(), lv:new Set(), ty:new Set(), y1:"", y2:"", sort:"year" };
+let selected = null;
+
+/* ---------------- 检索索引 ---------------- */
+// 每篇的可检索文本（题名+研究区+期刊+方法+路线名+卡片正文摘要）
+function hay(p){
+  if(p._hay) return p._hay;
+  let s = [p.t, p.area, p.jr, p.m, p.rn, p.s, p.ty].join(" ");
+  const c = D.cards_full[p._ck];
+  if(c) s += " " + [c.title_en, c.authors, c.area, c.methods, (c.route||[]).join(" "),
+                    (c.weak||[]).join(" "), (c.gap||[]).join(" "), (c.innov||[]).join(" "),
+                    (c.find||[]).join(" "), c.transfer].join(" ");
+  p._hay = s.toLowerCase();
+  return p._hay;
+}
+// 卡片键在构建期已完成匹配（归一化题名 + DOI），页面上直接取用
+D.papers.forEach(p => { p._ck = p.ck || null; });
+// 同一篇在索引里是英文原题名、在卡片里是中文题名，两个名字都要能查到
+const titleToPaper = {};
+D.papers.forEach(p => {
+  if(!titleToPaper[p.t]) titleToPaper[p.t] = p;
+  const c = p._ck ? D.cards_full[p._ck] : null;
+  if(c){
+    if(c.title && !titleToPaper[c.title]) titleToPaper[c.title] = p;
+    if(c.title_en && !titleToPaper[c.title_en]) titleToPaper[c.title_en] = p;
+  }
+});
+const pidToPaper = {};
+D.papers.forEach(p => { pidToPaper[p.i] = p; });
+
+/* ---------------- 工具 ---------------- */
+function countBy(arr, key){ const m = {}; arr.forEach(x => { const v = x[key]; if(v!==""&&v!=null) m[v]=(m[v]||0)+1; }); return m; }
+function sortByCount(m){ return Object.entries(m).sort((a,b) => b[1]-a[1] || String(a[0]).localeCompare(String(b[0]),"zh")); }
+
+/* ---------------- 筛选 ---------------- */
+function pass(p){
+  if(F.stage.size && !F.stage.has(p.s)) return false;
+  if(F.route.size && !F.route.has(p.r)) return false;
+  if(F.method.size && !F.method.has(p.m)) return false;
+  if(F.ev.size && !F.ev.has(p.ev)) return false;
+  if(F.lv.size && !F.lv.has(p.lv)) return false;
+  if(F.ty.size && !F.ty.has(p.ty)) return false;
+  if(F.doc==="card" && !p.card) return false;
+  if(F.doc==="pilot" && !p.pilot) return false;
+  if(F.doc==="none" && (p.card||p.pilot)) return false;
+  const y = parseInt(p.y)||0;
+  if(F.y1 && y && y < parseInt(F.y1)) return false;
+  if(F.y2 && y && y > parseInt(F.y2)) return false;
+  if(F.q){
+    const terms = F.q.toLowerCase().split(/\s+/).filter(Boolean);
+    const scope = F.scope==="t" ? (p.t||"").toLowerCase()
+                : F.scope==="a" ? (p.area||"").toLowerCase()
+                : F.scope==="j" ? ((p.jr||"")+" "+(p.journal||"")).toLowerCase()
+                : hay(p);
+    if(!terms.every(t => scope.includes(t))) return false;
+  }
+  return true;
+}
+function current(){
+  let l = D.papers.filter(pass);
+  if(F.sort==="year") l.sort((a,b) => (parseInt(b.y)||0)-(parseInt(a.y)||0) || a.t.localeCompare(b.t,"zh"));
+  else if(F.sort==="year_asc") l.sort((a,b) => (parseInt(a.y)||0)-(parseInt(b.y)||0));
+  else if(F.sort==="title") l.sort((a,b) => a.t.localeCompare(b.t,"zh"));
+  else if(F.sort==="route") l.sort((a,b) => a.r.localeCompare(b.r) || (parseInt(b.y)||0)-(parseInt(a.y)||0));
+  else if(F.sort==="rich") l.sort((a,b)=>(b.card?1:0)-(a.card?1:0)||(parseInt(b.y)||0)-(parseInt(a.y)||0));
+  return l;
+}
+
+/* ---------------- 渲染：筛选器 ---------------- */
+function setOf(name){ return {stage:F.stage,route:F.route,method:F.method,ev:F.ev,lv:F.lv,ty:F.ty}[name]; }
+
+function buildFilters(){
+  const S = D.meta.stages.map(s => s.name);
+  const stageC = countBy(D.papers,"s");
+  $("#f-stage").innerHTML = S.map(s =>
+    `<span class="chip${F.stage.has(s)?" on":""}" data-set="stage" data-val="${esc(s)}">${esc(s)}<span class="c">${stageC[s]||0}</span></span>`
+  ).join("");
+
+  const rc = countBy(D.papers,"r");
+  const rname = {}; D.meta.routes.forEach(r => rname[r.code]=r.name);
+  $("#f-route").innerHTML = D.meta.routes.map(r =>
+    `<span class="chip${F.route.has(r.code)?" on":""}" data-set="route" data-val="${r.code}" title="${esc(r.name)}">${r.code}<span class="c">${rc[r.code]||0}</span></span>`
+  ).join("");
+
+  const mc = countBy(D.papers,"m");
+  const top = sortByCount(mc).slice(0,16);
+  $("#f-method").innerHTML = top.map(([m,n]) =>
+    `<span class="chip${F.method.has(m)?" on":""}" data-set="method" data-val="${esc(m)}">${esc(m.replace(/^\d+_/,""))}<span class="c">${n}</span></span>`
+  ).join("");
+
+  const mk = null;
+  const evc = countBy(D.papers,"ev");
+  $("#f-ev").innerHTML = ["成熟共识","学界共识","争议","推测","材料未提供"].filter(v=>evc[v])
+    .map(v => `<span class="chip${F.ev.has(v)?" on":""}" data-set="ev" data-val="${esc(v)}">${esc(v)}<span class="c">${evc[v]}</span></span>`).join("");
+  const lvc = countBy(D.papers,"lv");
+  $("#f-lv").innerHTML = ["高","中","低"].filter(v=>lvc[v])
+    .map(v => `<span class="chip${F.lv.has(v)?" on":""}" data-set="lv" data-val="${esc(v)}">${esc(v)}<span class="c">${lvc[v]}</span></span>`).join("");
+  const tyc = countBy(D.papers,"ty");
+  $("#f-ty").innerHTML = sortByCount(tyc)
+    .map(([v,n]) => `<span class="chip${F.ty.has(v)?" on":""}" data-set="ty" data-val="${esc(v)}">${esc(v)}<span class="c">${n}</span></span>`).join("");
+}
+
+/* ---------------- 渲染：结果列表 ---------------- */
+function hl(text, terms){
+  let s = esc(text);
+  if(!terms||!terms.length) return s;
+  terms.forEach(t => {
+    if(t.length<2) return;
+    const re = new RegExp("("+t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");
+    s = s.replace(re,"<mark>$1</mark>");
+  });
+  return s;
+}
+function renderList(){
+  const l = current(), box = $("#list");
+  const terms = F.q.toLowerCase().split(/\s+/).filter(t=>t.length>1);
+  $("#n-hit").textContent = l.length;
+  $("#n-all").textContent = D.papers.length;
+  const af = [];
+  if(F.stage.size) af.push("阶段:"+[...F.stage].join("/"));
+  if(F.route.size) af.push("路线:"+[...F.route].join("/"));
+  if(F.method.size) af.push("方法:"+F.method.size+"项");
+  if(F.ev.size) af.push("证据:"+[...F.ev].join("/"));
+  if(F.lv.size) af.push("创新:"+[...F.lv].join("/"));
+  if(F.ty.size) af.push("类型:"+[...F.ty].join("/"));
+  if(F.y1||F.y2) af.push("年份:"+(F.y1||"")+"–"+(F.y2||""));
+  if(F.doc) af.push("状态:"+({card:"已精读",pilot:"试水批次",none:"仅索引"})[F.doc]);
+  $("#active-filters").innerHTML = af.length ? "· "+esc(af.join("　")) : "";
+
+  if(!l.length){ box.innerHTML = `<div class="empty"><div class="big">◎</div>没有命中的文献<br><span style="font-size:12.5px">试试减少筛选条件，或换关键词</span></div>`; return; }
+  const MAX = 400;
+  const head = l.length>MAX ? `<div style="padding:4px 4px 10px;color:var(--txt3);font-size:12.5px">共 ${l.length} 篇，先显示前 ${MAX} 篇，请继续收窄条件</div>` : "";
+  box.innerHTML = head + l.slice(0,MAX).map(p => {
+    const tags = [];
+    tags.push(`<span class="tag rt" style="background:${p.sc}">${p.r}</span>`);
+    tags.push(`<span class="tag">${esc((p.m||"").replace(/^\d+_/,""))}</span>`);
+    if(p.y) tags.push(`<span class="tag">${esc(p.y)}</span>`);
+    if(p.card) tags.push(`<span class="tag card">已精读</span>`);
+    else if(p.pilot) tags.push(`<span class="tag pilot">试水 #${p.pilot}</span>`);
+    else tags.push(`<span class="tag none">仅索引</span>`);
+    if(p.lv==="高") tags.push(`<span class="tag hl">创新高</span>`);
+    const sub = [p.jr||(D.cards_full[p._ck]||{}).journal||"", p.area||(D.cards_full[p._ck]||{}).area||""].filter(Boolean).join(" · ");
+    return `<div class="row${selected===p.i?" sel":""}" data-i="${p.i}">
+      <h3>${hl(p.t,terms)}</h3>
+      ${sub?`<div class="sub">${esc(sub).slice(0,150)}</div>`:""}
+      <div class="tags">${tags.join("")}</div></div>`;
+  }).join("");
+}
+
+/* ---------------- 渲染：详情 ---------------- */
+function renderDetail(){
+  const box = $("#detail");
+  if(!selected){ box.innerHTML = `<div class="empty"><div class="big">←</div>从左侧点选一篇文献<br><span style="font-size:12.5px">已精读的会展示完整卡片</span></div>`; return; }
+  const p = D.papers.find(x => x.i===selected);
+  const c = p._ck ? D.cards_full[p._ck] : null;
+  let h = `<div class="dt">
+    <h2>${esc(p.t)}</h2>
+    ${c&&c.title_en&&c.title_en!==p.t?`<div class="en">${esc(c.title_en)}</div>`:""}
+    <div class="facts">
+      <dt>技术路线</dt><dd><span class="pill" style="background:${p.sc};color:#fff">${p.r} ${esc(p.rn)}</span></dd>
+      <dt>研究阶段</dt><dd>${esc(p.s)}</dd>
+      <dt>具体方法</dt><dd>${esc(p.m||"—")}</dd>
+      ${p.y?`<dt>年份</dt><dd>${esc(p.y)}</dd>`:""}
+      ${c&&c.journal?`<dt>期刊</dt><dd>${esc(c.journal)}</dd>`:""}
+      ${c&&c.authors?`<dt>作者</dt><dd>${esc(c.authors)}</dd>`:""}
+      ${c&&c.doi?`<dt>DOI</dt><dd><a href="https://doi.org/${esc(c.doi)}" target="_blank" rel="noopener">${esc(c.doi)}</a></dd>`:""}
+      ${c&&c.doc_type?`<dt>类型</dt><dd>${esc(c.doc_type)}</dd>`:""}
+      ${c&&c.area?`<dt>研究区</dt><dd>${esc(c.area)}</dd>`:""}
+      ${c&&c.lv?`<dt>创新等级</dt><dd>${esc(c.lv)}　证据强度：${esc(c.ev)}</dd>`:""}
+    </div>`;
+
+  if(c){
+    if(c.route&&c.route.length) h += `<div class="blk"><h4>技术链（${c.route.length} 步）</h4><ol class="chain">${c.route.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`;
+    if(c.data) h += `<div class="blk"><h4>数据</h4><div class="kv">${esc(c.data)}</div></div>`;
+    if(c.methods) h += `<div class="blk"><h4>方法链</h4><div class="kv">${esc(c.methods)}</div></div>`;
+    if(c.find&&c.find.length) h += `<div class="blk f"><h4>量化发现</h4><ul class="bul">${c.find.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    if(c.weak&&c.weak.length) h += `<div class="blk w"><h4>主要缺陷（${c.weak.length}）</h4><ul class="bul">${c.weak.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    if(c.gap&&c.gap.length) h += `<div class="blk g"><h4>技术空洞（${c.gap.length}）</h4><ul class="bul">${c.gap.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    if(c.innov&&c.innov.length) h += `<div class="blk i"><h4>对本项目的可创新点（${c.innov.length}）</h4><ul class="bul">${c.innov.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    if(c.transfer) h += `<div class="blk pr"><h4>迁移到全高原的主要障碍</h4><div class="kv">${esc(c.transfer)}</div></div>`;
+    if(c.quotes&&c.quotes.length) h += `<div class="blk"><h4>原文引句</h4>${c.quotes.map(q=>`<div class="q">${esc(q)}</div>`).join("")}</div>`;
+  } else {
+    h += `<div class="note">
+      <b>这篇还没有精读卡片。</b><br>
+      ${p.pilot?`已排入<b>试水精读批次第 ${p.pilot} 篇</b>（${esc(p.method?.replace(/^\d+_/,"")||"")}，优先补在全领域最空缺的能力上），卡片产出后会显示在这里。`
+               :`目前只有题录与规则分类信息（来自三级分类索引 CSV）。全库共 373 篇处于这个状态，将按批次补齐精读卡片。`}
+    </div>`;
+  }
+  h += `</div>`;
+  box.innerHTML = h;
+}
+
+/* ---------------- 视图一：技术路线 ---------------- */
+function renderRoutes(){
+  const byRoute = {}; D.papers.forEach(p => { (byRoute[p.r] = byRoute[p.r]||[]).push(p); });
+  let h = "";
+  D.meta.stages.forEach(st => {
+    const rs = D.meta.routes.filter(r => r.stage===st.k);
+    if(!rs.length) return;
+    h += `<div class="stage-h"><span style="width:9px;height:9px;border-radius:50%;background:${st.color};display:inline-block"></span>${esc(st.name)}<em></em><span style="color:var(--txt3);font-weight:400;font-size:12px">${rs.reduce((a,r)=>a+(byRoute[r.code]||[]).length,0)} 篇</span></div>`;
+    const mx = Math.max(...D.meta.routes.map(r => (byRoute[r.code]||[]).length));
+    rs.forEach(r => {
+      const list = byRoute[r.code]||[];
+      const carded = list.filter(p=>p.card).length;
+      const core = list.filter(p=>p.rel==="A").length;
+      const w = list.length/mx*100, wc = list.length?carded/list.length*w:0;
+      h += `<div class="route-row" data-route="${r.code}" style="cursor:pointer">
+        <div class="nm">${r.code} ${esc(r.name)}<small>核心主线 ${core} 篇</small></div>
+        <div class="bar" title="${list.length} 篇，其中已精读 ${carded} 篇">
+          <i style="width:${wc}%;background:${st.color}"></i>
+          <i style="width:${Math.max(0,w-wc)}%;background:${st.color};opacity:.22"></i>
+        </div>
+        <div class="num"><b>${list.length}</b> 篇</div></div>`;
+    });
+  });
+  $("#route-bars").innerHTML = h;
+
+  const mc = countBy(D.papers,"m");
+  const rows = sortByCount(mc).slice(0,20);
+  const rname = {}; D.meta.routes.forEach(r => rname[r.code]=r.name);
+  $("#method-table").innerHTML = `<table class="t"><thead><tr>
+    <th>具体方法</th><th>路线</th><th style="text-align:right">文献数</th><th style="text-align:right">已精读</th><th style="width:38%">占比</th>
+    </tr></thead><tbody>${rows.map(([m,n]) => {
+      const list = D.papers.filter(p=>p.m===m);
+      const carded = list.filter(p=>p.card).length;
+      const r = list[0].r;
+      return `<tr data-route="${r}" style="cursor:pointer">
+        <td>${esc(m.replace(/^\d+_/,""))}</td>
+        <td><span class="pill">${r}</span> <span style="color:var(--txt3)">${esc((rname[r]||"").slice(0,12))}</span></td>
+        <td style="text-align:right"><b>${n}</b></td>
+        <td style="text-align:right;color:var(--txt2)">${carded}</td>
+        <td><div style="height:8px;background:#f1f3f6;border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:${n/rows[0][1]*100}%;background:${list[0].sc}"></i></div></td>
+      </tr>`;
+    }).join("")}</tbody></table>`;
+}
+
+/* ---------------- 视图二：能力缺口 ---------------- */
+function renderGaps(){
+  const cr = D.stats.crit.slice().sort((a,b)=>a.strong-b.strong);
+  $("#gap-bars").innerHTML = cr.slice(0,8).map(c => `
+    <div class="gap-row">
+      <div class="t">${esc(c.name)}</div>
+      <div class="bar2"><i style="width:${Math.max(1.5,c.strong*100)}%"></i></div>
+      <div class="v"><b>${(c.strong*100).toFixed(1)}%</b> <span style="color:var(--txt3)">/ ${c.n_strong} 篇</span></div>
+    </div>`).join("") +
+    `<div class="legend" style="margin-top:14px"><span>判据示例：${esc(cr[0].judge)}</span></div>`;
+
+  const cap = D.stats.capability;
+  const crit = D.stats.crit;
+  const shade = v => {
+    if(v<=0) return {bg:"#f7f8fa", fg:"#b9c2cd"};
+    const t = Math.min(1, v/0.6);
+    const a = 0.14 + 0.86*t;
+    return {bg:`rgba(47,111,181,${a.toFixed(2)})`, fg: a>0.5 ? "#fff" : "#33445a"};
+  };
+  let t = `<table class="mx-t"><thead><tr><th style="text-align:left">技术路线</th>
+    ${crit.map(c => `<th class="rot" title="${esc(c.judge)}">${esc(c.name)}</th>`).join("")}
+    <th style="padding-left:10px">篇数</th></tr></thead><tbody>`;
+  cap.forEach(r => {
+    t += `<tr><td class="lb">${r.code} ${esc(r.name)}<br><small>${esc(r.stage)}</small></td>`;
+    crit.forEach(c => {
+      const v = r.s[c.key]||0, s = shade(v);
+      t += `<td class="c" style="background:${s.bg};color:${s.fg}" title="${esc(r.code)} × ${esc(c.name)}：${(v*100).toFixed(0)}%（${Math.round(v*r.n)}/${r.n} 篇）">${v>0?(v*100).toFixed(0):""}</td>`;
+    });
+    t += `<td style="padding-left:10px;color:var(--txt2)" class="num">${r.n}</td></tr>`;
+  });
+  $("#cap-matrix").innerHTML = t + `</tbody></table>`;
+
+  const rn = {}; D.meta.routes.forEach(r=>rn[r.code]=r.name);
+  $("#comp-table").innerHTML = `<table class="t"><thead><tr>
+    <th>补位方</th><th></th><th>受益方</th><th>承接能力</th><th style="text-align:right">承接项数</th></tr></thead><tbody>
+    ${D.stats.comp_route.filter(r=>r.n>=2).slice(0,14).map(r => `<tr>
+      <td><span class="pill" style="background:#eaf3ec;color:var(--ok)">${r.p}</span> ${esc((r.pn||"").slice(0,14))}</td>
+      <td style="color:var(--txt3)">→</td>
+      <td><span class="pill">${r.q}</span> ${esc((r.qn||"").slice(0,14))}</td>
+      <td style="color:var(--txt2)">${esc((r.crit||[]).join("、"))}</td>
+      <td style="text-align:right"><b>${r.n}</b></td></tr>`).join("")}
+    </tbody></table>`;
+}
+
+/* ---------------- 视图三：我的项目 ---------------- */
+function renderMine(){
+  const u = D.stats.user;
+  $("#mine-core").textContent = u.core;
+  const critName = {}; D.meta.criteria.forEach(c => critName[c.key]=c.name);
+  const critRate = {}; D.stats.crit.forEach(c => critRate[c.key]=c.strong);
+  $("#mine-claims").innerHTML = (u.claim||[]).map(([txt,k]) => `
+    <div class="claim"><span class="dot"></span><div>${esc(txt)}
+      <div style="margin-top:4px"><span class="pill hot">补空缺：${esc(critName[k]||k)}（领域强项仅 ${((critRate[k]||0)*100).toFixed(1)}%）</span></div>
+    </div></div>`).join("");
+  $("#mine-secondary").textContent = u.secondary||"";
+
+  const byBranch = {};
+  (D.stats.user_links||[]).forEach(l => { (byBranch[l.branch]=byBranch[l.branch]||[]).push(l); });
+  const order = Object.entries(byBranch).sort((a,b)=>b[1].length-a[1].length);
+  $("#mine-branches").innerHTML = order.map(([b,items]) => `
+    <div class="branch"><div class="bt">${esc(b)}<span class="n">${items.length} 篇</span></div>
+      <div class="items">${items.map(it => {
+        const p = titleToPaper[it.title];
+        return `<div class="it" ${p?`data-i="${p.i}"`:""}>${esc(it.title).slice(0,64)} <span style="color:var(--txt3)">· ${it.route||""} · ${it.year||""}</span></div>`;
+      }).join("")}</div></div>`).join("");
+
+  $("#pilot-list").innerHTML = `<table class="t"><thead><tr>
+    <th>#</th><th>题名</th><th>路线</th><th>补的空缺</th></tr></thead><tbody>
+    ${D.pilot.map(p => {
+      const pp = (p.pid && pidToPaper[p.pid]) || (p.dupof && pidToPaper[p.dupof]) || D.papers.find(x => x.pilot===p.n);
+      const note = p.dupof ? `<span class="pill" title="与已精读篇同题，属抽取重复副本">同题副本</span>` : "";
+      return `<tr ${pp?`data-i="${pp.i}" style="cursor:pointer"`:""}>
+        <td>${p.n}</td><td>${esc(p.title).slice(0,58)} ${note}</td>
+        <td><span class="pill">${p.route}</span></td>
+        <td style="color:var(--txt2)">${esc(p.crit)}</td></tr>`;
+    }).join("")}</tbody></table>`;
+}
+
+/* ---------------- 事件 ---------------- */
+function switchView(v){
+  ["search","routes","gaps","mine"].forEach(x => {
+    $("#v-"+x).style.display = x===v ? "" : "none";
+  });
+  $$("nav button").forEach(b => b.classList.toggle("on", b.dataset.v===v));
+  location.hash = v==="search" ? "" : v;
+  window.scrollTo(0,0);
+}
+function refresh(){ buildFilters(); renderList(); renderDetail(); }
+
+document.addEventListener("click", e => {
+  const nav = e.target.closest("nav button");
+  if(nav){ switchView(nav.dataset.v); return; }
+
+  const chip = e.target.closest(".chip");
+  if(chip){
+    const set = chip.dataset.set, v = chip.dataset.val;
+    if(set){
+      const S = setOf(set);
+      if(S){ S.has(v) ? S.delete(v) : S.add(v); refresh(); }
+    } else if(chip.parentElement.id==="f-scope"){ F.scope = chip.dataset.s; 
+      $$("#f-scope .chip").forEach(c=>c.classList.toggle("on",c===chip)); renderList();
+    } else if(chip.parentElement.id==="f-doc"){ F.doc = chip.dataset.d;
+      $$("#f-doc .chip").forEach(c=>c.classList.toggle("on",c===chip)); renderList();
+    }
+    return;
+  }
+  const row = e.target.closest("[data-i]");
+  if(row){
+    selected = row.dataset.i;
+    if($("#v-search").style.display==="none"){ switchView("search"); }
+    $(".wrap").classList.add("show-detail");
+    renderList(); renderDetail();
+    return;
+  }
+  const rt = e.target.closest("[data-route]");
+  if(rt){
+    F.route.clear(); F.route.add(rt.dataset.route);
+    F.stage.clear(); F.method.clear();
+    switchView("search"); refresh();
+  }
+});
+
+let tmr;
+$("#q").addEventListener("input", e => {
+  clearTimeout(tmr);
+  const v = e.target.value;
+  tmr = setTimeout(()=>{ F.q = v.trim(); renderList(); }, 130);
+});
+$("#f-y1").addEventListener("input", e => { F.y1 = e.target.value.trim(); renderList(); });
+$("#f-y2").addEventListener("input", e => { F.y2 = e.target.value.trim(); renderList(); });
+$("#btn-clear").addEventListener("click", ()=>{ F.q=""; $("#q").value=""; renderList(); });
+$("#btn-reset").addEventListener("click", ()=>{
+  F.q=""; F.scope=""; F.stage.clear(); F.route.clear(); F.method.clear();
+  F.ev.clear(); F.lv.clear(); F.ty.clear(); F.y1=""; F.y2=""; F.doc="";
+  $("#q").value=""; $("#f-y1").value=""; $("#f-y2").value="";
+  $$("#f-scope .chip").forEach((c,i)=>c.classList.toggle("on",i===0));
+  $$("#f-doc .chip").forEach((c,i)=>c.classList.toggle("on",i===0));
+  selected=null; refresh();
+});
+const SORTS = [["year","按年份 ↓"],["year_asc","按年份 ↑"],["rich","已精读优先"],["route","按路线"],["title","按题名"]];
+$("#btn-sort").addEventListener("click", ()=>{
+  const i = SORTS.findIndex(s=>s[0]===F.sort);
+  F.sort = SORTS[(i+1)%SORTS.length][0];
+  $("#btn-sort").textContent = SORTS.find(s=>s[0]===F.sort)[1];
+  renderList();
+});
+$("#btn-filter").addEventListener("click", ()=> $(".wrap").classList.toggle("show-filter"));
+document.addEventListener("keydown", e => { if(e.key==="/" && document.activeElement.tagName!=="INPUT"){ e.preventDefault(); $("#q").focus(); } });
+
+/* ---------------- 启动 ---------------- */
+function boot(){
+  if(!D){ document.body.innerHTML = "<p style='padding:40px'>数据未加载：请确认 data.js 与 index.html 在同一目录。</p>"; return; }
+  $("#hs-total").textContent = D.meta.total;
+  $("#hs-card").textContent = D.meta.carded;
+  $("#hs-pilot").textContent = D.meta.pilot;
+  $("#brandsub").textContent = `${D.meta.total} 篇索引 · ${D.meta.carded} 篇已精读卡片 · 10 条技术路线 · 更新 ${D.meta.generated}`;
+  buildFilters(); renderList(); renderDetail(); renderRoutes(); renderGaps(); renderMine();
+  const h = (location.hash||"").replace("#","");
+  if(["routes","gaps","mine"].includes(h)) switchView(h);
+}
+boot();
+</script>
+</body>
+</html>

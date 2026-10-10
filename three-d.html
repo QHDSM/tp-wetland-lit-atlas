@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>三维文献网络 · 青藏高原高寒湿地</title>
+<style>
+:root{
+  --bg:#05080f; --panel:rgba(14,20,32,.86); --line:rgba(255,255,255,.10);
+  --txt:#e8edf5; --txt2:#93a0b5; --txt3:#5f6b80; --hot:#ff4a3d;
+  --s1:#3b82c4; --s2:#d97742; --s3:#43a37a; --s4:#9b7ad0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:radial-gradient(1200px 800px at 50% 30%,#0b1220 0%,#05080f 70%);
+  color:var(--txt);font:13.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+canvas{display:block;position:fixed;inset:0;cursor:grab}
+canvas.drag{cursor:grabbing}
+
+.top{position:fixed;top:0;left:0;right:0;z-index:20;padding:12px 18px;display:flex;
+  align-items:center;gap:16px;background:linear-gradient(180deg,rgba(5,8,15,.92),rgba(5,8,15,0));pointer-events:none}
+.top>*{pointer-events:auto}
+.top a{color:var(--txt2);text-decoration:none;font-size:12.5px;border:1px solid var(--line);
+  padding:5px 11px;border-radius:8px;background:rgba(255,255,255,.03)}
+.top a:hover{color:#fff;background:rgba(255,255,255,.08)}
+.title b{font-size:14.5px;letter-spacing:.3px}
+.title small{display:block;color:var(--txt3);font-size:11.5px}
+.spacer{flex:1}
+
+.panel{position:fixed;z-index:20;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;backdrop-filter:blur(14px) saturate(140%)}
+.panel h4{margin:0 0 8px;font-size:11.5px;font-weight:600;color:var(--txt3);
+  letter-spacing:.08em;text-transform:uppercase}
+.left{left:18px;top:64px;width:242px;padding:14px;max-height:calc(100vh - 150px);overflow-y:auto}
+.right{right:18px;top:64px;width:308px;padding:14px;max-height:calc(100vh - 150px);overflow-y:auto}
+.bottom{left:18px;bottom:18px;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;
+  color:var(--txt3);font-size:11.5px;background:var(--panel);border:1px solid var(--line);
+  padding:7px 14px;border-radius:999px;backdrop-filter:blur(10px)}
+
+.chip{display:inline-block;font-size:11.5px;padding:3px 9px;border-radius:999px;
+  border:1px solid var(--line);color:var(--txt2);cursor:pointer;margin:0 4px 5px 0;transition:.14s;
+  background:rgba(255,255,255,.02)}
+.chip:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+.chip.on{background:#e8edf5;border-color:#e8edf5;color:#0a0f18;font-weight:600}
+.chip.mine{background:rgba(255,74,61,.14);border-color:rgba(255,74,61,.5);color:#ff8b82}
+.chip.mine.on{background:var(--hot);border-color:var(--hot);color:#fff}
+.btn{font:inherit;font-size:12px;padding:5px 11px;border-radius:8px;cursor:pointer;
+  background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--txt2)}
+.btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.btn.on{background:#e8edf5;color:#0a0f18;border-color:#e8edf5;font-weight:600}
+
+label.sw{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt2);padding:3px 0;cursor:pointer}
+label.sw input{accent-color:#3b82c4;width:14px;height:14px}
+.legendrow{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--txt2);padding:2px 0}
+.legendrow i{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.legendrow b{color:var(--txt);font-weight:500}
+.count{font-variant-numeric:tabular-nums}
+
+/* 详情卡 */
+#detail{display:none}
+#detail.on{display:block}
+#detail h3{margin:0 0 6px;font-size:13.5px;line-height:1.5;font-weight:600}
+#detail .sub{color:var(--txt3);font-size:11.5px;margin-bottom:10px;line-height:1.6}
+#detail .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;margin-bottom:10px}
+#detail .kv dt{color:var(--txt3);white-space:nowrap}
+#detail .kv dd{margin:0;color:var(--txt)}
+#detail ul{margin:6px 0 0;padding-left:16px;font-size:12.5px;color:var(--txt2);line-height:1.65}
+#detail ul li{margin-bottom:4px}
+#detail .q{border-left:2px solid var(--line);padding:5px 9px;color:var(--txt2);font-size:11.5px;
+  font-style:italic;margin:6px 0;background:rgba(255,255,255,.03);border-radius:0 6px 6px 0}
+#detail .close{position:absolute;right:12px;top:10px;border:0;background:none;color:var(--txt3);
+  cursor:pointer;font-size:16px;line-height:1}
+#detail .close:hover{color:#fff}
+.tagline{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.tag{font-size:11px;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,.07);color:var(--txt2)}
+.tag.hot{background:rgba(255,74,61,.18);color:#ff8b82;font-weight:600}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div class="top">
+  <div class="title"><b>三维文献网络</b><small id="sub">加载中…</small></div>
+  <div class="spacer"></div>
+  <a href="index.html">← 返回检索</a>
+</div>
+
+<div class="panel left">
+  <h4>研究阶段</h4>
+  <div id="f-stage"></div>
+  <h4 style="margin-top:14px">技术路线</h4>
+  <div id="f-route"></div>
+  <h4 style="margin-top:14px">球体大小表示</h4>
+  <div>
+    <span class="chip on" data-size="card">卡片充实度</span>
+    <span class="chip" data-size="innov">可创新点条数</span>
+    <span class="chip" data-size="even">等大</span>
+  </div>
+  <h4 style="margin-top:14px">连接类型</h4>
+  <label class="sw"><input type="checkbox" id="e-route" checked>同技术路线</label>
+  <label class="sw"><input type="checkbox" id="e-method" checked>同具体方法</label>
+  <label class="sw"><input type="checkbox" id="e-area">同研究区</label>
+  <label class="sw"><input type="checkbox" id="e-comp" checked>主题互补（承接缺口）</label>
+  <label class="sw"><input type="checkbox" id="e-borrow" checked>我的论文借力</label>
+</div>
+
+<div class="panel right" id="sidebar">
+  <h4>统计</h4>
+  <div id="stats" style="font-size:12.5px;color:var(--txt2);line-height:1.9"></div>
+  <h4 style="margin-top:14px">图例</h4>
+  <div id="legend"></div>
+</div>
+
+<div class="panel right" id="detail">
+  <button class="close" onclick="clearSel()">✕</button>
+  <div id="detailbody"></div>
+</div>
+
+<div class="panel bottom">
+  <button class="btn" id="btn-auto">自动旋转</button>
+  <button class="btn" id="btn-reset">复位视角</button>
+  <button class="btn mine" id="btn-mine">定位到我的论文</button>
+  <button class="btn" id="btn-spread">散开</button>
+</div>
+<div class="hint">拖拽旋转 · 滚轮缩放 · 点击球体看详情 · 双击空白复位</div>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+const D = window.SITE_DATA;
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const HOT = "#ff4a3d";
+
+/* ============ 我的论文（以 000.docx 为准） ============ */
+const MINE = {
+  key:"__MINE__",
+  title:"青藏高原湿地时空格局变化分析及情景预测",
+  area:"若尔盖县（青藏高原东北缘），县域 10358.00 km²",
+  period:"2000—2020 现状 / 2030 情景",
+  resolution:"湿地图 30 m；协变量 1 km（990 m 格网评价单元）",
+  accuracy:"时间外推 OA 0.920、Kappa 0.799",
+  methods:"动态度 → 类型转移矩阵 → 五项景观指数(NP/LPI/MPS/CONTAG/SHDI) → 地理探测器(q) → CRITIC 客观赋权生态风险分区 → 逐像元 CNN-LSTM 滚动外推 → 放牧情景对比",
+  findings:[
+    "湿地面积 2210.1 km²(2000)→1473.0 km²(2010)→2675.8 km²(2020)，净增 465.7 km²",
+    "当年降水与湿地面积 r=0.178；4 年滑动平均 r=0.681",
+    "地理探测器：年平均气温 q=0.228 最高，年降水 0.046，放牧 0.012，NDVI 趋势 0.006；交互均增强",
+    "CRITIC 权重：降水 0.2775、放牧 0.2714、NDVI 趋势 0.2402、气温 0.2109",
+    "2030 自然放牧 2912 km²（+235.79 km², 8.81%）；放牧约束 2911 km²；完全退牧仅减 6.01 km²"
+  ],
+  limits:["湿地图在沼泽—沼泽化草甸过渡带存在类别混淆","协变量 1 km，未纳入排水工程、地下水埋深、围栏",
+          "单次训练，未量化参数随机性","放牧因子作用可能被低估"],
+  route:"R6", purpose:"我的论文·技术路线",
+};
+
+/* ============ 数据准备 ============ */
+const papers = D.papers;
+const cards = D.cards_full;
+papers.forEach(p => { p._ck = p.ck || null; });
+const byId = {}; papers.forEach(p => byId[p.i] = p);
+
+// 三维位置容器
+const N = papers.length;
+const px = new Float32Array(N), py = new Float32Array(N), pz = new Float32Array(N);
+const rad = new Float32Array(N);
+const COL = [];
+
+const PHASE_COLOR = {}; D.meta.stages.forEach(s => PHASE_COLOR[s.name] = s.color);
+const PHASE_ORDER = D.meta.stages.map(s => s.name);
+
+function radiusOf(p, mode){
+  if(mode==="even") return 3.2;
+  if(mode==="innov"){ const c = p._ck?cards[p._ck]:null; return 2.4 + Math.min(6, (c?c.innov.length:0))*0.75; }
+  const c = p._ck?cards[p._ck]:null;
+  if(!c) return 2.2;
+  let v = 0;
+  v += Math.min(4, c.route.length)*0.35;
+  v += Math.min(4, c.find.length)*0.35;
+  v += Math.min(4, c.weak.length)*0.25;
+  return 3.0 + Math.min(5.0, v)*0.85;
+}
+
+// 初始位置：按研究阶段分层分布在一个球壳里，同路线聚簇
+function initPositions(){
+  const groups = {};
+  papers.forEach((p,i) => { const g = p.r || "NA"; (groups[g]=groups[g]||[]).push(i); });
+  const keys = Object.keys(groups);
+  keys.forEach((g,gi) => {
+    // 每个路线一个方向
+    const t = keys.length>1 ? gi/(keys.length-1) : 0.5;
+    const theta = t*Math.PI*2;
+    const phi = Math.acos(1 - 2*((gi%5)+0.5)/5);
+    const R = 300 + ((gi*37)%80);
+    const cx = R*Math.sin(phi)*Math.cos(theta), cy = R*Math.cos(phi), cz = R*Math.sin(phi)*Math.sin(theta);
+    const idxs = groups[g];
+    idxs.forEach((i,k) => {
+      const a = k*2.399963;                       // 黄金角
+      const rr = 34*Math.sqrt(k+1);
+      px[i] = cx + rr*Math.cos(a) - 0;
+      py[i] = cy + rr*Math.sin(a)*0.6;
+      pz[i] = cz + rr*Math.sin(a*1.7);
+    });
+  });
+  // 我的论文放在中心
+  mpos[0]=0; mpos[1]=0; mpos[2]=0;
+}
+const mpos = [0,0,0];
+
+/* ============ 关系边（在浏览器里按真实字段构建） ============ */
+let EDGES = [];
+function buildEdges(){
+  const e = [];
+  const idxOf = {}; papers.forEach((p,i)=>idxOf[p.i]=i);
+  // 同路线：按方法细分桶内两两相邻连接，避免全连接爆炸
+  const buckets = {};
+  papers.forEach((p,i) => {
+    pickEdges(buckets, "R|"+p.r, i, 3);
+    pickEdges(buckets, "M|"+p.m, i, 3);
+    const area = (p.area||"").slice(0,10);
+    if(area.length>=4) pickEdges(buckets, "A|"+area, i, 2);
+  });
+  for(const k in buckets){
+    const b = buckets[k];
+    if(!b || !b.pairs) continue;
+    for(const pair of b.pairs) e.push([pair[0], pair[1], typeOf(k)]);
+  }
+  // 主题互补：路线级承接表落成具体文献之间的连线（抽样，避免爆炸）
+  (D.stats.comp_route||[]).slice(0,20).forEach(r => {
+    const A = papers.map((p,i)=>[p,i]).filter(([p])=>p.r===r.p).map(([,i])=>i);
+    const B = papers.map((p,i)=>[p,i]).filter(([p])=>p.r===r.q).map(([,i])=>i);
+    for(let k=0;k<Math.min(14,A.length*B.length);k++){
+      const a = A[k % A.length], b = B[(k*7+3) % B.length];
+      if(a!==undefined && b!==undefined && a!==b) e.push([a,b,"comp"]);
+    }
+  });
+  // 我的论文借力
+  const titleToIdx = {};
+  papers.forEach((p,i) => {
+    if(!titleToIdx[p.t]) titleToIdx[p.t] = i;
+    const c = p._ck?cards[p._ck]:null;
+    if(c){ if(c.title && titleToIdx[c.title]===undefined) titleToIdx[c.title]=i;
+           if(c.title_en && titleToIdx[c.title_en]===undefined) titleToIdx[c.title_en]=i; }
+  });
+  const seen = {};
+  (D.stats.user_links||[]).forEach(l => {
+    const i = titleToIdx[l.title];
+    if(i===undefined) return;
+    if(seen[i]) return; seen[i]=1;
+    e.push([-1, i, "borrow"]);
+  });
+  return e;
+}
+function pickEdges(buckets, key, i, per){
+  buckets[key] = buckets[key] || {members:[], pairs:[]};
+  const b = buckets[key];
+  const n = Math.min(per, b.members.length);
+  for(let k=0;k<n;k++){
+    const j = b.members[b.members.length-1-k];
+    b.pairs.push([j,i]);
+  }
+  b.members.push(i);
+  if(b.members.length>3) b.members.shift();
+}
+function typeOf(k){ return k[0]==="R"?"route":(k[0]==="M"?"method":"area"); }
+
+/* ============ 视角与投影 ============ */
+let rotX = -0.35, rotY = 0.6, dist = 1250;
+let auto = true, selIdx = -1, hoverIdx = -1;
+let scale = 1;
+
+function project(x,y,z){
+  // 先绕 Y 再绕 X
+  let cy = Math.cos(rotY), sy = Math.sin(rotY);
+  let X = x*cy - z*sy, Z = x*sy + z*cy;
+  let cx = Math.cos(rotX), sx = Math.sin(rotX);
+  let Y = y*cx - Z*sx, Z2 = y*sx + Z*cx;
+  const f = dist/(dist + Z2 + 900);
+  return { x: W/2 + X*f*scale, y: H/2 + Y*f*scale, z: Z2, f };
+}
+
+/* ============ 交互状态 ============ */
+const F = { stage:new Set(), route:new Set(), sizeMode:"card",
+            edges:{route:true,method:true,area:false,comp:true,borrow:true} };
+
+function visible(i){
+  const p = papers[i];
+  if(F.stage.size && !F.stage.has(p.s)) return false;
+  if(F.route.size && !F.route.has(p.r)) return false;
+  return true;
+}
+
+/* ============ 渲染 ============ */
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR = Math.min(2, window.devicePixelRatio||1);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR;
+  cv.style.width = W+"px"; cv.style.height = H+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  scale = Math.min(W,H)/900;
+}
+window.addEventListener("resize", resize);
+
+let t0 = performance.now();
+function frame(now){
+  const dt = Math.min(50, now-t0); t0 = now;
+  if(auto && !dragging){ rotY += dt*0.00006; rotX = -0.35 + Math.sin(now*0.00007)*0.12; }
+  ctx.clearRect(0,0,W,H);
+
+  // 投影全部点
+  const P = new Array(N);
+  for(let i=0;i<N;i++){
+    P[i] = project(px[i],py[i],pz[i]);
+  }
+  const MP = project(mpos[0],mpos[1],mpos[2]);
+
+  // 边（先画，压在球下面）
+  const order = [];
+  for(let k=0;k<EDGES.length;k++){
+    const [a,b,t] = EDGES[k];
+    if(!F.edges[t]) continue;
+    const ai = a<0 ? -1 : a, bi = b;
+    if(ai>=0 && (!visible(ai) || !visible(bi))) continue;
+    const A = ai<0 ? MP : P[ai], B = P[bi];
+    if(!A||!B) continue;
+    order.push([(A.z+B.z)/2, A, B, t, ai, bi]);
+  }
+  order.sort((p,q)=>q[0]-p[0]);
+  ctx.lineWidth = 0.7;
+  for(const [,A,B,t,ai,bi] of order){
+    let col;
+    const isSel = selIdx>=0 && (ai===selIdx || bi===selIdx || (ai<0&&selIdx===bi));
+    const isHov = hoverIdx>=0 && (ai===hoverIdx || bi===hoverIdx);
+    if(t==="borrow") col = isSel||isHov ? "rgba(255,74,61,.95)" : "rgba(255,74,61,.30)";
+    else if(t==="comp") col = isSel||isHov ? "rgba(155,122,208,.9)" : "rgba(155,122,208,.16)";
+    else if(t==="route") col = isSel||isHov ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.07)";
+    else col = isSel||isHov ? "rgba(120,200,255,.7)" : "rgba(120,200,255,.10)";
+    ctx.strokeStyle = col;
+    ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();
+  }
+
+  // 我的论文：光晕
+  const pulse = 1 + 0.16*Math.sin(now*0.0022);
+  const mr = 26*MP.f*scale*pulse;
+  const g = ctx.createRadialGradient(MP.x,MP.y,0,MP.x,MP.y,mr*2.6);
+  g.addColorStop(0,"rgba(255,74,61,.55)"); g.addColorStop(.42,"rgba(255,74,61,.16)");
+  g.addColorStop(1,"rgba(255,74,61,0)");
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(MP.x,MP.y,mr*2.6,0,6.2832); ctx.fill();
+  ctx.fillStyle=HOT; ctx.beginPath(); ctx.arc(MP.x,MP.y,mr,0,6.2832); ctx.fill();
+  ctx.strokeStyle="rgba(255,255,255,.9)"; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.arc(MP.x,MP.y,mr,0,6.2832); ctx.stroke();
+
+  // 球体：按 z 排序，远的先画
+  const draw = [];
+  for(let i=0;i<N;i++){
+    if(!visible(i)) continue;
+    draw.push(i);
+  }
+  draw.sort((a,b)=>P[b].z-P[a].z);
+  for(const i of draw){
+    const p = P[i], q = papers[i];
+    const base = PHASE_COLOR[q.s] || "#8894a8";
+    const rr = rad[i]*p.f*scale;
+    const dim = (selIdx>=0 && selIdx!==i) ? 0.28 : 1;
+    const c = q._ck ? cards[q._ck] : null;
+    const gg = ctx.createRadialGradient(p.x-rr*.35,p.y-rr*.35,rr*.12,p.x,p.y,rr);
+    gg.addColorStop(0, shade(base, .55, dim));
+    gg.addColorStop(1, shade(base, -.35, dim));
+    ctx.fillStyle = gg;
+    ctx.beginPath(); ctx.arc(p.x,p.y,rr,0,6.2832); ctx.fill();
+    if(i===hoverIdx){ ctx.strokeStyle="rgba(255,255,255,.95)"; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(p.x,p.y,rr+1.5,0,6.2832); ctx.stroke(); }
+  }
+  requestAnimationFrame(frame);
+}
+function shade(hex, amt, dim){
+  let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  if(amt>0){ r+= (255-r)*amt; g+=(255-g)*amt; b+=(255-b)*amt; }
+  else { r*=(1+amt); g*=(1+amt); b*=(1+amt); }
+  r*=dim; g*=dim; b*=dim;
+  return `rgb(${r|0},${g|0},${b|0})`;
+}
+
+/* ============ 拾取 ============ */
+function pick(mx,my){
+  let best=-1, bz=1e9;
+  for(let i=0;i<N;i++){
+    if(!visible(i)) continue;
+    const P = project(px[i],py[i],pz[i]);
+    const rr = Math.max(3.4, rad[i]*P.f*scale);
+    const d = (mx-P.x)**2 + (my-P.y)**2;
+    if(d <= (rr+2)**2 && P.z < bz){ bz = P.z; best = i; }
+  }
+  // 我的论文优先
+  const MP = project(mpos[0],mpos[1],mpos[2]);
+  if((mx-MP.x)**2+(my-MP.y)**2 <= (30*scale)**2) return -1;
+  return best;
+}
+
+/* ============ 鼠标事件 ============ */
+let dragging=false, lastX=0, lastY=0, moved=0;
+cv.addEventListener("mousedown", e => { dragging=true; moved=0; lastX=e.clientX; lastY=e.clientY; cv.classList.add("drag"); });
+window.addEventListener("mouseup", e => {
+  if(dragging && moved<5){
+    const i = pick(e.clientX, e.clientY);
+    if(i>=0) select(i); else if((e.clientX)<0) {}
+  }
+  dragging=false; cv.classList.remove("drag");
+});
+window.addEventListener("mousemove", e => {
+  if(dragging){
+    const dx=e.clientX-lastX, dy=e.clientY-lastY;
+    moved += Math.abs(dx)+Math.abs(dy);
+    rotY += dx*0.006; rotX += dy*0.005;
+    rotX = Math.max(-1.45, Math.min(1.45, rotX));
+    lastX=e.clientX; lastY=e.clientY;
+  } else {
+    const i = pick(e.clientX, e.clientY);
+    if(i!==hoverIdx){ hoverIdx=i; cv.style.cursor = i>=0?"pointer":"grab"; }
+  }
+});
+cv.addEventListener("dblclick", ()=>resetView());
+cv.addEventListener("wheel", e => {
+  e.preventDefault();
+  dist *= (1 + Math.sign(e.deltaY)*0.09);
+  dist = Math.max(420, Math.min(4200, dist));
+}, {passive:false});
+
+/* 触摸：单指旋转、双指缩放 */
+let touchDist=0;
+cv.addEventListener("touchstart", e => {
+  if(e.touches.length===1){ dragging=true; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; moved=0; }
+  else if(e.touches.length===2){ dragging=false;
+    touchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); }
+}, {passive:true});
+cv.addEventListener("touchmove", e => {
+  if(e.touches.length===1 && dragging){
+    const dx=e.touches[0].clientX-lastX, dy=e.touches[0].clientY-lastY;
+    moved+=Math.abs(dx)+Math.abs(dy); rotY+=dx*0.007; rotX+=dy*0.006;
+    rotX=Math.max(-1.45,Math.min(1.45,rotX));
+    lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+  } else if(e.touches.length===2){
+    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    if(touchDist){ dist *= touchDist/d; dist=Math.max(420,Math.min(4200,dist)); }
+    touchDist = d;
+  }
+}, {passive:true});
+cv.addEventListener("touchend", e => {
+  if(dragging && moved<6 && e.changedTouches.length===1){
+    const t=e.changedTouches[0]; const i=pick(t.clientX,t.clientY);
+    if(i>=0) select(i);
+  }
+  dragging=false;
+}, {passive:true});
+
+/* ============ 详情 ============ */
+function select(i){
+  selIdx = i;
+  const p = papers[i], c = p._ck?cards[p._ck]:null;
+  const box = document.getElementById("detail"), body = document.getElementById("detailbody");
+  let h = `<h3>${esc(p.t)}</h3>`;
+  const tags = [`<span class="tag" style="background:${p.sc}33;color:${p.sc}">${p.r} ${esc(p.rn||"")}</span>`];
+  if(p.y) tags.push(`<span class="tag">${esc(p.y)}</span>`);
+  if(p.method) tags.push(`<span class="tag">${esc(p.method.replace(/^\d+_/,""))}</span>`);
+  if(c) tags.push(`<span class="tag">已精读</span>`); else tags.push(`<span class="tag">仅索引</span>`);
+  h += `<div class="tagline">${tags.join("")}</div>`;
+  h += `<div class="kv">`;
+  if(c){
+    if(c.journal) h += `<dt>期刊</dt><dd>${esc(c.journal)}</dd>`;
+    if(c.area) h += `<dt>研究区</dt><dd>${esc(c.area).slice(0,150)}</dd>`;
+    if(c.doi) h += `<dt>DOI</dt><dd>${esc(c.doi)}</dd>`;
+  } else {
+    h += `<dt>状态</dt><dd>只有题录与规则分类，正文待抽取精读</dd>`;
+  }
+  h += `</div>`;
+  if(c){
+    if(c.find && c.find.length) h += `<h4 style="margin:8px 0 4px;font-size:11.5px;color:var(--txt3)">量化发现</h4><ul>${c.find.slice(0,3).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+    if(c.innov && c.innov.length) h += `<h4 style="margin:10px 0 4px;font-size:11.5px;color:var(--txt3)">可创新点</h4><ul>${c.innov.slice(0,2).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+    if(c.quotes && c.quotes.length) h += `<div class="q">${esc(c.quotes[0])}</div>`;
+  }
+  const nb = EDGES.filter(([a,b])=>a===i||b===i).length;
+  h += `<div style="margin-top:10px;color:var(--txt3);font-size:11.5px">该球与其他球有 ${nb} 条连接</div>`;
+  body.innerHTML = h;
+  box.classList.add("on");
+  document.getElementById("sidebar").style.display = "none";
+}
+function clearSel(){
+  selIdx = -1;
+  document.getElementById("detail").classList.remove("on");
+  document.getElementById("sidebar").style.display = "";
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ============ 面板 ============ */
+function renderPanel(){
+  const st = document.getElementById("f-stage");
+  const sc = {}; papers.forEach(p=>{ if(p.s) sc[p.s]=(sc[p.s]||0)+1; });
+  st.innerHTML = PHASE_ORDER.filter(k=>sc[k]).map(k => {
+    const col = PHASE_COLOR[k];
+    return `<span class="chip${F.stage.has(k)?" on":""}" data-stage="${esc(k)}">${esc(k)}<span class="count" style="opacity:.6"> ${sc[k]}</span></span>`;
+  }).join("");
+  const rt = document.getElementById("f-route");
+  const rc = {}; papers.forEach(p=>{ if(p.r) rc[p.r]=(rc[p.r]||0)+1; });
+  rt.innerHTML = D.meta.routes.filter(r=>rc[r.code]).map(r =>
+    `<span class="chip${F.route.has(r.code)?" on":""}" data-route="${r.code}" title="${esc(r.name)}">${r.code} <span class="count" style="opacity:.6">${rc[r.code]}</span></span>`
+  ).join("");
+  const lg = document.getElementById("legend");
+  lg.innerHTML = PHASE_ORDER.map(k => `<div class="legendrow"><i style="background:${PHASE_COLOR[k]}"></i>${esc(k)}</div>`).join("")
+    + `<div class="legendrow" style="margin-top:6px"><i style="background:${HOT};box-shadow:0 0 8px ${HOT}"></i><b>我的论文（000.docx）</b></div>`
+    + `<div class="legendrow"><span style="display:inline-block;width:16px;height:0;border-top:2px solid rgba(255,74,61,.7);margin-right:6px"></span>借力文献</div>`
+    + `<div class="legendrow"><span style="display:inline-block;width:16px;height:0;border-top:2px solid rgba(155,122,208,.7);margin-right:6px"></span>主题互补承接</div>`
+    + `<div class="legendrow"><span style="display:inline-block;width:16px;height:0;border-top:2px solid rgba(255,255,255,.35);margin-right:6px"></span>同技术路线</div>`
+    + `<div class="legendrow"><span style="display:inline-block;width:16px;height:0;border-top:2px solid rgba(120,200,255,.5);margin-right:6px"></span>同具体方法</div>`;
+  const nb = EDGES.filter(([a,b,t])=>F.edges[t]).length;
+  document.getElementById("stats").innerHTML =
+    `文献球体 <b style="color:var(--txt)">${N}</b><br>` +
+    `已精读 <b style="color:var(--txt)">${papers.filter(p=>p._ck).length}</b> · 仅索引 ${papers.filter(p=>!p._ck).length}<br>` +
+    `连接 <b style="color:var(--txt)">${nb}</b> 条<br>` +
+    `当前可见 <b style="color:var(--txt)">${papers.filter((p,i)=>visible(i)).length}</b> 个` +
+    (selIdx>=0?`<br>已选：${esc(papers[selIdx].t).slice(0,22)}…`:"");
+}
+
+/* ============ 事件绑定 ============ */
+document.addEventListener("click", e => {
+  const t = e.target;
+  if(t.dataset && t.dataset.stage !== undefined && t.classList.contains("chip")){
+    const k = t.dataset.stage; F.stage.has(k)?F.stage.delete(k):F.stage.add(k); renderPanel(); return;
+  }
+  if(t.dataset && t.dataset.route && t.classList.contains("chip")){
+    const k = t.dataset.route; F.route.has(k)?F.route.delete(k):F.route.add(k); renderPanel(); return;
+  }
+  if(t.dataset && t.dataset.size && t.classList.contains("chip")){
+    F.sizeMode = t.dataset.size;
+    document.querySelectorAll("[data-size]").forEach(c=>c.classList.toggle("on", c===t));
+    papers.forEach((p,i)=>rad[i]=radiusOf(p,F.sizeMode));
+    return;
+  }
+});
+["route","method","area","comp","borrow"].forEach(k => {
+  const el = document.getElementById("e-"+k);
+  el.addEventListener("change", ()=>{ F.edges[k]=el.checked; renderPanel(); });
+});
+document.getElementById("btn-auto").addEventListener("click", e => {
+  auto = !auto; e.target.classList.toggle("on", auto); e.target.textContent = auto?"自动旋转":"已暂停";
+});
+document.getElementById("btn-reset").addEventListener("click", resetView);
+document.getElementById("btn-spread").addEventListener("click", ()=>{
+  for(let i=0;i<N;i++){ px[i]*=1.35; py[i]*=1.35; pz[i]*=1.35; }
+  dist = Math.min(4200, dist*1.2);
+});
+document.getElementById("btn-mine").addEventListener("click", ()=>{
+  dist = 620; rotX = -0.2; rotY = 0.6; auto = false;
+  document.getElementById("btn-auto").classList.remove("on");
+  document.getElementById("btn-auto").textContent = "已暂停";
+  const box = document.getElementById("detail"), body = document.getElementById("detailbody");
+  body.innerHTML = `<h3 style="color:${HOT}">${esc(MINE.title)}</h3>
+    <div class="tagline"><span class="tag hot">我的论文 · 技术路线</span><span class="tag">${esc(MINE.route)}</span></div>
+    <div class="kv">
+      <dt>研究区</dt><dd>${esc(MINE.area)}</dd>
+      <dt>时段</dt><dd>${esc(MINE.period)}</dd>
+      <dt>精度</dt><dd>${esc(MINE.resolution)}<br><b>${esc(MINE.accuracy)}</b></dd>
+    </div>
+    <h4 style="margin:8px 0 4px;font-size:11.5px;color:var(--txt3)">技术路线</h4>
+    <div style="font-size:12.5px;color:var(--txt2);line-height:1.7">${esc(MINE.methods)}</div>
+    <h4 style="margin:10px 0 4px;font-size:11.5px;color:var(--txt3)">主要结论</h4>
+    <ul>${MINE.findings.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h4 style="margin:10px 0 4px;font-size:11.5px;color:var(--txt3)">论文自陈不足</h4>
+    <ul>${MINE.limits.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  box.classList.add("on");
+  document.getElementById("sidebar").style.display = "none";
+});
+function resetView(){ rotX=-0.35; rotY=0.6; dist=1250; auto=true;
+  const b=document.getElementById("btn-auto"); b.classList.add("on"); b.textContent="自动旋转";
+  clearSel(); }
+
+/* ============ 启动 ============ */
+function boot(){
+  document.getElementById("sub").textContent =
+    `${N} 篇文献 · ${EDGES.length} 条连接 · 我的论文已特殊标注`;
+  resize();
+  initPositions();
+  papers.forEach((p,i)=>rad[i]=radiusOf(p,F.sizeMode));
+  renderPanel();
+  requestAnimationFrame(frame);
+}
+window.addEventListener("error", function(ev){
+  var d=document.getElementById("errbar");
+  if(!d){ d=document.createElement("div"); d.id="errbar";
+    d.style.cssText="position:fixed;left:50%;top:56px;transform:translateX(-50%);z-index:99;background:#7f1d1d;color:#fff;padding:8px 14px;border-radius:8px;font-size:12.5px;max-width:80vw";
+    document.body.appendChild(d); }
+  d.textContent="页面脚本出错："+(ev.message||"未知")+"（已记录，其余功能仍可用）";
+});
+// 先建边再启动（建边需要位置无关的数据）
+EDGES = buildEdges();
+boot();
+window.addEventListener("load", ()=>renderPanel());
+</script>
+</body>
+</html>
