@@ -4,7 +4,7 @@ const MY_PROJECT = {
   title: "青藏高原湿地时空格局变化分析及情景预测",
   title_en: "Spatiotemporal Pattern Change Analysis and Scenario Prediction of Wetlands on the Tibetan Plateau",
   source: "目标SCI\\论文\\000.docx",
-  route: "R6",
+  route: "R2 → R3 → R4 → R6 → R7 → R9",
   area: "若尔盖县（青藏高原东北缘），县域有效范围 10358.00 km²；评价域（五期中任一期为湿地）3199.40 km²，占县域 30.89%",
   span: "2000—2020（五期 2000/2005/2010/2015/2020）；2030 情景",
   res: "湿地图 30 m；协变量 1 km；评价单元 990 m 格网（33×33 个 30 m 像元）",
@@ -51,10 +51,10 @@ const MY_PROJECT = {
   ],
 };
 
-// 卡片库的"可创新点"是按另一套口径（全高原 S×E 时滞交互）写的，与本论文口径不同
+// 卡片库的“可创新点”保留历史内容，但不再作为网站路线分类与项目解释的依据。
 const CARD_SPEC_NOTE =
-  "注意：本库 318 张卡片里的『可创新点』是按 CARD_SPEC 的全高原口径（景观结构风险 S × 环境胁迫 E 的时滞交互、M3 vs M4 预测增益）撰写的；" +
-  "本项目页与论文各视图以 000.docx 为准（若尔盖县 + CNN-LSTM 情景预测）。两套口径并存，引用时勿混用。";
+  "本站的项目技术路线、R0—R9功能分类和论文结论均以目标SCI\\论文\\000.docx为唯一正本。" +
+  "318张旧卡片中的『可创新点』曾按全高原S×E时滞交互口径撰写，仅作为历史备注保留，不参与路线定义，也不能代表本论文已经实施的内容。";
 
 // 显式挂到 window，避免顶层 const 在部分加载方式下不可见
 window.MY_PROJECT = MY_PROJECT;
